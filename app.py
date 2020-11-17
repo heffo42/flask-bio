@@ -18,13 +18,13 @@ CORS(app)
 def hello_world():
     search = request.args.get('search')
     print(search)
-    return jsonify(list(dev.distinct( "DrugName", {"DrugName" : {'$regex':  f'^{search}.*' }} ))[:10])
+    return jsonify(list(dev.distinct( "DrugName", {"DrugName" : {'$regex':  f'^{search}.*','$options':  'i' }} ))[:10])
 
 @app.route('/company')
 def company_search():
     search = request.args.get('search')
     print(search)
-    return jsonify(list(dev.distinct( "CompanyName", {"CompanyName" : {'$regex':  f'^{search}.*' }} ))[:10])
+    return jsonify(list(dev.distinct( "CompanyName", {"CompanyName" : {'$regex':  f'^{search}.*', '$options':  'i'}} ))[:10])
 
 
 @app.route('/details')
