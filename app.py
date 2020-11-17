@@ -39,6 +39,19 @@ def coco():
     return jsonify('hi coco')
 
 
+@app.route('/company_profile')
+def company_profile():
+    name = request.args.get('name')
+    A = list(dev.aggregate([{'$match' : {'CompanyName': name}},
+                        {'$group' : {
+                            '_id': '$Indication',
+                            'count': {'$sum': 1}
+                        }}]))
+    drugs = sorted(A, key=lambda current: current['count'], reverse=True)[:10]
+    return Response(json.dumps([{'label': x['_id'], 'y':x['count']} for x in drugs]),  mimetype='application/json')
+
+
+
 
 
 print('made it here')
