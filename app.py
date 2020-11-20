@@ -14,6 +14,17 @@ dev = db.trails
 app = Flask(__name__)
 CORS(app)
 
+import json
+import datetime
+from json import JSONEncoder
+
+# subclass JSONEncoder
+class DateTimeEncoder(JSONEncoder):
+        #Override the default method
+        def default(self, obj):
+            if isinstance(obj, (datetime.date, datetime.datetime)):
+                return obj.isoformat()
+
 @app.route('/')
 def hello_world():
     search = request.args.get('search')
@@ -48,8 +59,33 @@ def company_profile():
                             'count': {'$sum': 1}
                         }}]))
     drugs = sorted(A, key=lambda current: current['count'], reverse=True)[:10]
-    return Response(json.dumps([{'label': x['_id'], 'y':x['count']} for x in drugs]),  mimetype='application/json')
 
+    holder = {}
+    holder['chart'] = [{'label': x['_id'], 'y':x['count']} for x in drugs]
+    holder['pipeline'] =  list(dev.aggregate([{'$match' : {'CompanyName': name}}, {'$sort': {'StatusDate': 1}},
+                {'$group': 
+                          {'_id':{'DrugName':'$DrugName', 'Indication':'$Indication'},
+                           'lastUpdate': {'$last': '$StatusDate'},
+                           'lastPhase': {'$last': '$DevelopmentStatus'}
+                           }
+
+                 }]))
+
+    return Response(json.dumps(holder, indent=4, cls=DateTimeEncoder),  mimetype='application/json')
+
+
+@app.route('/pipeline_data')
+def pipeline_data():
+    name = request.args.get('name')
+    data = list(dev.aggregate([{'$match' : {'CompanyName': 'Prevail Therapeutics Inc'}}, {'$sort': {'StatusDate': 1}},
+                {'$group': 
+                          {'_id':{'DrugName':'$DrugName', 'Indication':'$Indication'},
+                           'lastUpdate': {'$last': '$StatusDate'},
+                           'lastPhase': {'$last': '$DevelopmentStatus'}
+                           }
+
+                 }]))
+    return Response(json.dumps(data, indent=4, cls=DateTimeEncoder),  mimetype='application/json')
 
 
 
