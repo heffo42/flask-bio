@@ -48,6 +48,7 @@ def get_drug_details():
 @app.route('/coco')
 def coco():
     return jsonify('hi coco')
+    print('hi coco')
 
 
 @app.route('/company_profile')
